@@ -1,0 +1,407 @@
+import { useEffect, useState } from 'react';
+import axiosClient from '../api/axiosClient';
+import Campo from './ui/Campo';
+import BotonSenal from './ui/BotonSenal';
+import SubirImagen from './ui/SubirImagen';
+import { useToast } from '../context/ToastContext';
+
+function AdminSuperadmin() {
+    const [eventoForm, setEventoForm] = useState({ nombre: '', descripcion: '', fechaInicio: '', fechaFin: '' });
+    const [rolForm, setRolForm] = useState({ usuarioId: '', nombreRol: 'ROLE_DUENIO_STAND' });
+    const [panoramaForm, setPanoramaForm] = useState({ nombre: '', eventoId: '', imagenUrl: '', esPuntoInicio: false });
+    const [hotspotForm, setHotspotForm] = useState({ panoramaOrigenId: '', panoramaDestinoId: '', standId: '', tipo: 'NAVEGACION', yaw: 0, pitch: 0 });
+    const [eventos, setEventos] = useState([]);
+    const [hotspotEventoId, setHotspotEventoId] = useState('');
+    const [panoramasDelEvento, setPanoramasDelEvento] = useState([]);
+    const [standsDelEvento, setStandsDelEvento] = useState([]);
+
+    const { mostrar } = useToast();
+
+    useEffect(() => {
+        if (!hotspotEventoId) {
+            setPanoramasDelEvento([]);
+            setStandsDelEvento([]);
+            return;
+        }
+        axiosClient.get(`/panoramas/evento/${hotspotEventoId}`).then((res) => setPanoramasDelEvento(res.data));
+        axiosClient.get(`/stands/evento/${hotspotEventoId}`).then((res) => setStandsDelEvento(res.data));
+    }, [hotspotEventoId]);
+
+    useEffect(() => {
+        axiosClient.get('/eventos/publicos/vigentes').then((res) => setEventos(res.data));
+    }, []);
+
+    const crearPanorama = async (e) => {
+        e.preventDefault();
+        try {
+            await axiosClient.post('/panoramas', {
+                ...panoramaForm,
+                eventoId: Number(panoramaForm.eventoId),
+            });
+            mostrar('Panorama creado');
+            setPanoramaForm({ nombre: '', eventoId: panoramaForm.eventoId, imagenUrl: '', esPuntoInicio: false });
+        } catch (err) {
+            mostrar(err.response?.data?.mensaje || 'Error al crear panorama', 'error');
+        }
+    };
+
+    const crearHotspot = async (e) => {
+        e.preventDefault();
+        try {
+            await axiosClient.post('/hotspots', {
+                panoramaOrigenId: Number(hotspotForm.panoramaOrigenId),
+                panoramaDestinoId: hotspotForm.tipo === 'NAVEGACION' ? Number(hotspotForm.panoramaDestinoId) : null,
+                standId: hotspotForm.tipo === 'STAND' ? Number(hotspotForm.standId) : null,
+                tipo: hotspotForm.tipo,
+                yaw: Number(hotspotForm.yaw),
+                pitch: Number(hotspotForm.pitch),
+            });
+            mostrar('Hotspot creado');
+        } catch (err) {
+            mostrar(err.response?.data?.mensaje || 'Error al crear hotspot', 'error');
+        }
+    };
+
+    const crearEvento = async (e) => {
+        e.preventDefault();
+        try {
+            await axiosClient.post('/eventos', eventoForm);
+            mostrar('Evento creado');
+            setEventoForm({ nombre: '', descripcion: '', fechaInicio: '', fechaFin: '' });
+        } catch (err) {
+            mostrar(err.response?.data?.mensaje || 'Error al crear evento', 'error');
+        }
+    };
+    const [standForm, setStandForm] = useState({ nombre: '', descripcion: '', eventoId: '', propietarioId: '' });
+    const [buffetForm, setBuffetForm] = useState({ eventoId: '', propietarioId: '' });
+    const [todosLosEventos, setTodosLosEventos] = useState([]);
+    const [hotspotEventoIdBorrar, setHotspotEventoIdBorrar] = useState('');
+    const [panoramaBorrarId, setPanoramaBorrarId] = useState('');
+    const [panoramasParaBorrar, setPanoramasParaBorrar] = useState([]);
+    const [hotspotsParaBorrar, setHotspotsParaBorrar] = useState([]);
+
+    useEffect(() => {
+        axiosClient.get('/eventos/todos').then((res) => setTodosLosEventos(res.data));
+    }, []);
+
+    useEffect(() => {
+        if (!hotspotEventoIdBorrar) { setPanoramasParaBorrar([]); return; }
+        axiosClient.get(`/panoramas/evento/${hotspotEventoIdBorrar}`).then((res) => setPanoramasParaBorrar(res.data));
+    }, [hotspotEventoIdBorrar]);
+
+    useEffect(() => {
+        if (!panoramaBorrarId) { setHotspotsParaBorrar([]); return; }
+        axiosClient.get(`/hotspots/panorama/${panoramaBorrarId}`).then((res) => setHotspotsParaBorrar(res.data));
+    }, [panoramaBorrarId]);
+
+    const crearStand = async (e) => {
+        e.preventDefault();
+        try {
+            await axiosClient.post('/stands', {
+                ...standForm,
+                eventoId: Number(standForm.eventoId),
+                propietarioId: standForm.propietarioId ? Number(standForm.propietarioId) : null,
+            });
+            mostrar('Stand creado');
+            setStandForm({ nombre: '', descripcion: '', eventoId: '', propietarioId: '' });
+        } catch (err) {
+            mostrar(err.response?.data?.mensaje || 'Error al crear stand', 'error');
+        }
+    };
+    const [entradaForm, setEntradaForm] = useState({ nombre: '', precio: '', descripcion: '', eventoId: '' });
+
+    const crearEntrada = async (e) => {
+        e.preventDefault();
+        try {
+            await axiosClient.post('/productos', {
+                nombre: entradaForm.nombre, precio: Number(entradaForm.precio),
+                descripcion: entradaForm.descripcion, categoria: 'ENTRADA', eventoId: Number(entradaForm.eventoId),
+            });
+            mostrar('Entrada creada');
+            setEntradaForm({ nombre: '', precio: '', descripcion: '', eventoId: '' });
+        } catch (err) {
+            mostrar(err.response?.data?.mensaje || 'Error al crear entrada', 'error');
+        }
+    };
+    const crearBuffet = async (e) => {
+        e.preventDefault();
+        try {
+            await axiosClient.post('/buffets', {
+                eventoId: Number(buffetForm.eventoId),
+                propietarioId: buffetForm.propietarioId ? Number(buffetForm.propietarioId) : null,
+            });
+            mostrar('Buffet creado');
+            setBuffetForm({ eventoId: '', propietarioId: '' });
+        } catch (err) {
+            mostrar(err.response?.data?.mensaje || 'Error al crear buffet', 'error');
+        }
+    };
+
+    const borrarEvento = async (id) => {
+        try {
+            await axiosClient.delete(`/eventos/${id}`);
+            mostrar('Evento eliminado');
+            setTodosLosEventos((prev) => prev.filter((e) => e.id !== id));
+        } catch (err) {
+            mostrar(err.response?.data?.mensaje || 'Error al eliminar', 'error');
+        }
+    };
+
+    const borrarHotspot = async (id) => {
+        try {
+            await axiosClient.delete(`/hotspots/${id}`);
+            mostrar('Hotspot eliminado');
+            setHotspotsParaBorrar((prev) => prev.filter((h) => h.id !== id));
+        } catch (err) {
+            mostrar(err.response?.data?.mensaje || 'Error al eliminar', 'error');
+        }
+    };
+    const asignarRol = async (e) => {
+        e.preventDefault();
+        try {
+            await axiosClient.post('/roles/asignar', { usuarioId: Number(rolForm.usuarioId), nombreRol: rolForm.nombreRol });
+            mostrar('Rol asignado');
+        } catch (err) {
+            mostrar(err.response?.data?.mensaje || 'Error al asignar rol', 'error');
+        }
+    };
+
+    return (
+        <section>
+            <span className="font-mono text-xs text-senal tracking-widest uppercase">◣ Superadmin</span>
+            <h2 className="font-display font-semibold text-xl mt-1 mb-4">Gestión general</h2>
+
+            <div className="bg-superficie/50 rounded-2xl p-5 mt-4">
+                <h3 className="font-display font-medium mb-3">Foto de portada del sitio</h3>
+                <SubirImagen
+                    etiqueta="Portada de inicio"
+                    onSubido={async (url) => {
+                        try {
+                            await axiosClient.put('/configuracion', { imagenPortadaUrl: url });
+                            mostrar('Portada del sitio actualizada');
+                        } catch (err) {
+                            mostrar(err.response?.data?.mensaje || 'Error al actualizar portada', 'error');
+                        }
+                    }}
+                />
+            </div>
+
+            <div className="bg-superficie/50 rounded-2xl p-5 mb-4">
+                <h3 className="font-display font-medium mb-3">Crear evento</h3>
+                <form onSubmit={crearEvento} className="flex flex-col gap-3">
+                    <Campo placeholder="Nombre" value={eventoForm.nombre}
+                           onChange={(e) => setEventoForm({ ...eventoForm, nombre: e.target.value })} required />
+                    <Campo placeholder="Descripción" value={eventoForm.descripcion}
+                           onChange={(e) => setEventoForm({ ...eventoForm, descripcion: e.target.value })} />
+                    <div className="flex gap-3">
+                        <Campo type="datetime-local" value={eventoForm.fechaInicio}
+                               onChange={(e) => setEventoForm({ ...eventoForm, fechaInicio: e.target.value })} required />
+                        <Campo type="datetime-local" value={eventoForm.fechaFin}
+                               onChange={(e) => setEventoForm({ ...eventoForm, fechaFin: e.target.value })} required />
+                    </div>
+                    <BotonSenal type="submit">Crear evento</BotonSenal>
+                </form>
+            </div>
+            <div className="bg-superficie/50 rounded-2xl p-5 mt-4">
+                <h3 className="font-display font-medium mb-3">Crear stand (y asignar dueño)</h3>
+                <form onSubmit={crearStand} className="flex flex-col gap-3">
+                    <Campo placeholder="Nombre" value={standForm.nombre}
+                           onChange={(e) => setStandForm({ ...standForm, nombre: e.target.value })} required />
+                    <Campo placeholder="Descripción" value={standForm.descripcion}
+                           onChange={(e) => setStandForm({ ...standForm, descripcion: e.target.value })} />
+                    <select value={standForm.eventoId} onChange={(e) => setStandForm({ ...standForm, eventoId: e.target.value })} required
+                            className="bg-superficie rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-senal">
+                        <option value="">Elegí un evento</option>
+                        {eventos.map((ev) => <option key={ev.id} value={ev.id}>{ev.nombre} (#{ev.id})</option>)}
+                    </select>
+                    <Campo placeholder="ID del usuario dueño (opcional)" type="number" value={standForm.propietarioId}
+                           onChange={(e) => setStandForm({ ...standForm, propietarioId: e.target.value })} />
+                    <BotonSenal type="submit">Crear stand</BotonSenal>
+                </form>
+            </div>
+
+            <div className="bg-superficie/50 rounded-2xl p-5 mt-4">
+                <h3 className="font-display font-medium mb-3">Crear buffet (y asignar dueño)</h3>
+                <form onSubmit={crearBuffet} className="flex flex-col gap-3">
+                    <select value={buffetForm.eventoId} onChange={(e) => setBuffetForm({ ...buffetForm, eventoId: e.target.value })} required
+                            className="bg-superficie rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-senal">
+                        <option value="">Elegí un evento</option>
+                        {eventos.map((ev) => <option key={ev.id} value={ev.id}>{ev.nombre} (#{ev.id})</option>)}
+                    </select>
+                    <Campo placeholder="ID del usuario dueño (opcional)" type="number" value={buffetForm.propietarioId}
+                           onChange={(e) => setBuffetForm({ ...buffetForm, propietarioId: e.target.value })} />
+                    <BotonSenal type="submit">Crear buffet</BotonSenal>
+                </form>
+            </div>
+
+            <div className="bg-superficie/50 rounded-2xl p-5 mt-4">
+                <h3 className="font-display font-medium mb-3">Eventos (borrar los vencidos)</h3>
+                <ul className="flex flex-col gap-2">
+                    {todosLosEventos.map((ev) => (
+                        <li key={ev.id} className="flex items-center justify-between font-mono text-sm bg-fondo rounded-lg px-3 py-2">
+                            {ev.nombre} (#{ev.id})
+                            <button onClick={() => borrarEvento(ev.id)} className="text-xs text-tinta/40 hover:text-red-600">Eliminar</button>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+
+            <div className="bg-superficie/50 rounded-2xl p-5 mt-4">
+                <h3 className="font-display font-medium mb-3">Eliminar hotspots (círculos y flechas mal ubicados)</h3>
+                <select value={hotspotEventoIdBorrar} onChange={(e) => { setHotspotEventoIdBorrar(e.target.value); setPanoramaBorrarId(''); }}
+                        className="bg-superficie rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-senal mb-3 w-full">
+                    <option value="">Elegí un evento</option>
+                    {eventos.map((ev) => <option key={ev.id} value={ev.id}>{ev.nombre}</option>)}
+                </select>
+                <select value={panoramaBorrarId} onChange={(e) => setPanoramaBorrarId(e.target.value)}
+                        className="bg-superficie rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-senal mb-3 w-full">
+                    <option value="">Elegí un panorama</option>
+                    {panoramasParaBorrar.map((p) => <option key={p.id} value={p.id}>{p.nombre} (#{p.id})</option>)}
+                </select>
+                <ul className="flex flex-col gap-2">
+                    {hotspotsParaBorrar.map((h) => (
+                        <li key={h.id} className="flex items-center justify-between font-mono text-sm bg-fondo rounded-lg px-3 py-2">
+                            #{h.id} · {h.tipo} {h.tipo === 'NAVEGACION' ? `→ panorama ${h.panoramaDestinoId}` : `→ stand ${h.standId}`}
+                            <button onClick={() => borrarHotspot(h.id)} className="text-xs text-tinta/40 hover:text-red-600">Eliminar</button>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+            <div className="bg-superficie/50 rounded-2xl p-5 mt-4">
+                <h3 className="font-display font-medium mb-3">Agregar panorama al recorrido</h3>
+                <form onSubmit={crearPanorama} className="flex flex-col gap-3">
+                    <Campo placeholder="Nombre (ej: Pasillo salud)" value={panoramaForm.nombre}
+                           onChange={(e) => setPanoramaForm({ ...panoramaForm, nombre: e.target.value })} required />
+
+                    <select
+                        value={panoramaForm.eventoId}
+                        onChange={(e) => setPanoramaForm({ ...panoramaForm, eventoId: e.target.value })}
+                        required
+                        className="bg-superficie rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-senal"
+                    >
+                        <option value="">Elegí un evento</option>
+                        {eventos.map((ev) => (
+                            <option key={ev.id} value={ev.id}>{ev.nombre} (#{ev.id})</option>
+                        ))}
+                    </select>
+
+                    <SubirImagen etiqueta="Imagen 360 (equirectangular)"
+                                 onSubido={(url) => setPanoramaForm({ ...panoramaForm, imagenUrl: url })} />
+                    <label className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={panoramaForm.esPuntoInicio}
+                               onChange={(e) => setPanoramaForm({ ...panoramaForm, esPuntoInicio: e.target.checked })} />
+                        Es el punto de inicio del recorrido
+                    </label>
+                    <BotonSenal type="submit" disabled={!panoramaForm.imagenUrl}>Crear panorama</BotonSenal>
+                </form>
+            </div>
+
+            <div className="bg-superficie/50 rounded-2xl p-5 mt-4">
+                <h3 className="font-display font-medium mb-3">Conectar panoramas (flechas y stands)</h3>
+                <form onSubmit={crearHotspot} className="flex flex-col gap-3">
+                    <select
+                        value={hotspotEventoId}
+                        onChange={(e) => setHotspotEventoId(e.target.value)}
+                        className="bg-superficie rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-senal"
+                    >
+                        <option value="">Elegí el evento</option>
+                        {eventos.map((ev) => (
+                            <option key={ev.id} value={ev.id}>{ev.nombre} (#{ev.id})</option>
+                        ))}
+                    </select>
+
+                    <select
+                        value={hotspotForm.panoramaOrigenId}
+                        onChange={(e) => setHotspotForm({ ...hotspotForm, panoramaOrigenId: e.target.value })}
+                        required
+                        className="bg-superficie rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-senal"
+                    >
+                        <option value="">Panorama origen (desde dónde se ve el hotspot)</option>
+                        {panoramasDelEvento.map((p) => (
+                            <option key={p.id} value={p.id}>{p.nombre}</option>
+                        ))}
+                    </select>
+
+                    <select value={hotspotForm.tipo} onChange={(e) => setHotspotForm({ ...hotspotForm, tipo: e.target.value })}
+                            className="bg-superficie rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-senal">
+                        <option value="NAVEGACION">Flecha de navegación (mover a otro panorama)</option>
+                        <option value="STAND">Círculo de stand (abrir ficha del stand)</option>
+                    </select>
+
+                    {hotspotForm.tipo === 'NAVEGACION' ? (
+                        <select
+                            value={hotspotForm.panoramaDestinoId}
+                            onChange={(e) => setHotspotForm({ ...hotspotForm, panoramaDestinoId: e.target.value })}
+                            required
+                            className="bg-superficie rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-senal"
+                        >
+                            <option value="">Panorama destino (a dónde te lleva la flecha)</option>
+                            {panoramasDelEvento.map((p) => (
+                                <option key={p.id} value={p.id}>{p.nombre}</option>
+                            ))}
+                        </select>
+                    ) : (
+                        <select
+                            value={hotspotForm.standId}
+                            onChange={(e) => setHotspotForm({ ...hotspotForm, standId: e.target.value })}
+                            required
+                            className="bg-superficie rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-senal"
+                        >
+                            <option value="">Elegí el stand</option>
+                            {standsDelEvento.map((s) => (
+                                <option key={s.id} value={s.id}>{s.nombre}</option>
+                            ))}
+                        </select>
+                    )}
+
+                    <div className="flex gap-3">
+                        <Campo placeholder="Yaw (0-360)" type="number" value={hotspotForm.yaw}
+                               onChange={(e) => setHotspotForm({ ...hotspotForm, yaw: e.target.value })} required />
+                        <Campo placeholder="Pitch (-90 a 90)" type="number" value={hotspotForm.pitch}
+                               onChange={(e) => setHotspotForm({ ...hotspotForm, pitch: e.target.value })} required />
+                    </div>
+                    <BotonSenal type="submit">Crear hotspot</BotonSenal>
+                </form>
+            </div>
+
+            <div className="bg-superficie/50 rounded-2xl p-5 mt-4">
+                <h3 className="font-display font-medium mb-3">Crear entrada</h3>
+                <form onSubmit={crearEntrada} className="flex flex-col gap-3">
+                    <Campo placeholder="Nombre (ej: Entrada general)" value={entradaForm.nombre}
+                           onChange={(e) => setEntradaForm({ ...entradaForm, nombre: e.target.value })} required />
+                    <Campo placeholder="Precio" type="number" value={entradaForm.precio}
+                           onChange={(e) => setEntradaForm({ ...entradaForm, precio: e.target.value })} required />
+                    <Campo placeholder="Descripción" value={entradaForm.descripcion}
+                           onChange={(e) => setEntradaForm({ ...entradaForm, descripcion: e.target.value })} />
+                    <select value={entradaForm.eventoId} onChange={(e) => setEntradaForm({ ...entradaForm, eventoId: e.target.value })} required
+                            className="bg-superficie rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-senal">
+                        <option value="">Elegí un evento</option>
+                        {eventos.map((ev) => <option key={ev.id} value={ev.id}>{ev.nombre} (#{ev.id})</option>)}
+                    </select>
+                    <BotonSenal type="submit">Crear entrada</BotonSenal>
+                </form>
+            </div>
+
+            <div className="bg-superficie/50 rounded-2xl p-5">
+                <h3 className="font-display font-medium mb-3">Asignar rol a usuario</h3>
+                <form onSubmit={asignarRol} className="flex flex-col gap-3">
+                    <Campo placeholder="ID de usuario" type="number" value={rolForm.usuarioId}
+                           onChange={(e) => setRolForm({ ...rolForm, usuarioId: e.target.value })} required />
+                    <select
+                        value={rolForm.nombreRol}
+                        onChange={(e) => setRolForm({ ...rolForm, nombreRol: e.target.value })}
+                        className="bg-superficie rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-senal"
+                    >
+                        <option value="ROLE_DUENIO_STAND">Dueño de Stand</option>
+                        <option value="ROLE_EMPLEADO_STAND">Empleado de Stand</option>
+                        <option value="ROLE_DUENIO_BUFFET">Dueño de Buffet</option>
+                        <option value="ROLE_EMPLEADO_BUFFET">Empleado de Buffet</option>
+                    </select>
+                    <BotonSenal type="submit">Asignar</BotonSenal>
+                </form>
+            </div>
+        </section>
+    );
+}
+
+export default AdminSuperadmin;
