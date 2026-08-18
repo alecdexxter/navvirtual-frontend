@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import axiosClient from '../api/axiosClient';
 
 function Navbar() {
     const [abierto, setAbierto] = useState(false);
@@ -10,6 +11,19 @@ function Navbar() {
     const cerrarYNavegar = (ruta) => {
         setAbierto(false);
         navigate(ruta);
+    };
+    const irAlRecorrido = async () => {
+        setAbierto(false);
+        try {
+            const { data } = await axiosClient.get('/eventos/publicos/vigentes');
+            if (data.length > 0) {
+                navigate(`/recorrido/${data[0].id}`);
+            } else {
+                navigate('/eventos');
+            }
+        } catch {
+            navigate('/eventos');
+        }
     };
 
     return (
@@ -55,6 +69,7 @@ function Navbar() {
                     </button>
 
                     <MenuItem label="Inicio" onClick={() => cerrarYNavegar('/')} />
+                    <MenuItem label="Recorrido" onClick={irAlRecorrido} />
                     <MenuItem label="Entradas" onClick={() => cerrarYNavegar('/entradas')} />
                     <MenuItem label="Tienda" onClick={() => cerrarYNavegar('/carrito')} />
                     {usuario ? (

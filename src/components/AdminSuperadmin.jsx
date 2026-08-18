@@ -7,6 +7,7 @@ import { useToast } from '../context/ToastContext';
 
 function AdminSuperadmin() {
     const [eventoForm, setEventoForm] = useState({ nombre: '', descripcion: '', fechaInicio: '', fechaFin: '' });
+    const [eventoEditandoId, setEventoEditandoId] = useState(null);
     const [rolForm, setRolForm] = useState({ usuarioId: '', nombreRol: 'ROLE_DUENIO_STAND' });
     const [panoramaForm, setPanoramaForm] = useState({ nombre: '', eventoId: '', imagenUrl: '', esPuntoInicio: false });
     const [hotspotForm, setHotspotForm] = useState({ panoramaOrigenId: '', panoramaDestinoId: '', standId: '', tipo: 'NAVEGACION', yaw: 0, pitch: 0 });
@@ -62,16 +63,25 @@ function AdminSuperadmin() {
         }
     };
 
-    const crearEvento = async (e) => {
+    const guardarEvento = async (e) => {
         e.preventDefault();
         try {
-            await axiosClient.post('/eventos', eventoForm);
-            mostrar('Evento creado');
+            if (eventoEditandoId) {
+                await axiosClient.put(`/eventos/${eventoEditandoId}`, eventoForm);
+                mostrar('Evento actualizado');
+                setEventoEditandoId(null);
+            } else {
+                await axiosClient.post('/eventos', eventoForm);
+                mostrar('Evento creado');
+            }
             setEventoForm({ nombre: '', descripcion: '', fechaInicio: '', fechaFin: '' });
+            const { data } = await axiosClient.get('/eventos/todos');
+            setTodosLosEventos(data);
         } catch (err) {
-            mostrar(err.response?.data?.mensaje || 'Error al crear evento', 'error');
+            mostrar(err.response?.data?.mensaje || 'Error al guardar evento', 'error');
         }
     };
+
     const [standForm, setStandForm] = useState({ nombre: '', descripcion: '', eventoId: '', propietarioId: '' });
     const [buffetForm, setBuffetForm] = useState({ eventoId: '', propietarioId: '' });
     const [todosLosEventos, setTodosLosEventos] = useState([]);
@@ -108,6 +118,7 @@ function AdminSuperadmin() {
             mostrar(err.response?.data?.mensaje || 'Error al crear stand', 'error');
         }
     };
+
     const [entradaForm, setEntradaForm] = useState({ nombre: '', precio: '', descripcion: '', eventoId: '' });
 
     const crearEntrada = async (e) => {
@@ -123,6 +134,7 @@ function AdminSuperadmin() {
             mostrar(err.response?.data?.mensaje || 'Error al crear entrada', 'error');
         }
     };
+
     const crearBuffet = async (e) => {
         e.preventDefault();
         try {
@@ -156,6 +168,7 @@ function AdminSuperadmin() {
             mostrar(err.response?.data?.mensaje || 'Error al eliminar', 'error');
         }
     };
+
     const asignarRol = async (e) => {
         e.preventDefault();
         try {
@@ -187,8 +200,10 @@ function AdminSuperadmin() {
             </div>
 
             <div className="bg-superficie/50 rounded-2xl p-5 mb-4">
-                <h3 className="font-display font-medium mb-3">Crear evento</h3>
-                <form onSubmit={crearEvento} className="flex flex-col gap-3">
+                <h3 className="font-display font-medium mb-3">
+                    {eventoEditandoId ? 'Editar evento' : 'Crear evento'}
+                </h3>
+                <form onSubmit={guardarEvento} className="flex flex-col gap-3">
                     <Campo placeholder="Nombre" value={eventoForm.nombre}
                            onChange={(e) => setEventoForm({ ...eventoForm, nombre: e.target.value })} required />
                     <Campo placeholder="Descripción" value={eventoForm.descripcion}
@@ -199,9 +214,10 @@ function AdminSuperadmin() {
                         <Campo type="datetime-local" value={eventoForm.fechaFin}
                                onChange={(e) => setEventoForm({ ...eventoForm, fechaFin: e.target.value })} required />
                     </div>
-                    <BotonSenal type="submit">Crear evento</BotonSenal>
+                    <BotonSenal type="submit">{eventoEditandoId ? 'Guardar cambios' : 'Crear evento'}</BotonSenal>
                 </form>
             </div>
+
             <div className="bg-superficie/50 rounded-2xl p-5 mt-4">
                 <h3 className="font-display font-medium mb-3">Crear stand (y asignar dueño)</h3>
                 <form onSubmit={crearStand} className="flex flex-col gap-3">
@@ -240,7 +256,18 @@ function AdminSuperadmin() {
                     {todosLosEventos.map((ev) => (
                         <li key={ev.id} className="flex items-center justify-between font-mono text-sm bg-fondo rounded-lg px-3 py-2">
                             {ev.nombre} (#{ev.id})
-                            <button onClick={() => borrarEvento(ev.id)} className="text-xs text-tinta/40 hover:text-red-600">Eliminar</button>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => {
+                                        setEventoEditandoId(ev.id);
+                                        setEventoForm({ nombre: ev.nombre, descripcion: ev.descripcion, fechaInicio: ev.fechaInicio, fechaFin: ev.fechaFin });
+                                    }}
+                                    className="text-xs text-senal"
+                                >
+                                    Editar
+                                </button>
+                                <button onClick={() => borrarEvento(ev.id)} className="text-xs text-tinta/40 hover:text-red-600">Eliminar</button>
+                            </div>
                         </li>
                     ))}
                 </ul>
@@ -267,6 +294,7 @@ function AdminSuperadmin() {
                     ))}
                 </ul>
             </div>
+
             <div className="bg-superficie/50 rounded-2xl p-5 mt-4">
                 <h3 className="font-display font-medium mb-3">Agregar panorama al recorrido</h3>
                 <form onSubmit={crearPanorama} className="flex flex-col gap-3">

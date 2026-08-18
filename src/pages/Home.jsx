@@ -1,9 +1,22 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axiosClient from '../api/axiosClient';
+import { useAuth } from '../context/AuthContext';
 
 function Home() {
     const [imagen, setImagen] = useState(null);
+    const { usuario } = useAuth();
+    const navigate = useNavigate();
+
+    const handleClickCTA = async () => {
+        if (!usuario) return;
+        try {
+            const { data } = await axiosClient.get('/eventos/publicos/vigentes');
+            navigate(data.length > 0 ? `/recorrido/${data[0].id}` : '/eventos');
+        } catch {
+            navigate('/eventos');
+        }
+    };
 
     useEffect(() => {
         axiosClient.get('/configuracion').then((res) => setImagen(res.data.imagenPortadaUrl));
@@ -33,9 +46,16 @@ function Home() {
                         uno y comprá en la tienda o el buffet — todo desde un recorrido
                         360° que se siente como estar ahí.
                     </p>
-                    <Link to="/login" className="inline-block w-fit bg-senal hover:bg-senal-hover text-fondo font-display font-semibold text-lg px-8 py-4 rounded-full transition-colors">
-                        Iniciar sesión →
-                    </Link>
+
+                    {usuario ? (
+                        <button onClick={handleClickCTA} className="inline-block w-fit bg-senal hover:bg-senal-hover text-fondo font-display font-semibold text-lg px-8 py-4 rounded-full transition-colors">
+                            Entrar al recorrido →
+                        </button>
+                    ) : (
+                        <Link to="/login" className="inline-block w-fit bg-senal hover:bg-senal-hover text-fondo font-display font-semibold text-lg px-8 py-4 rounded-full transition-colors">
+                            Iniciar sesión →
+                        </Link>
+                    )}
                 </div>
             </section>
         </div>
