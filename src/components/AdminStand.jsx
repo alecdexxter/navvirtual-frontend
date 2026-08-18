@@ -17,12 +17,18 @@ function AdminStand() {
     const [productos, setProductos] = useState([]);
     const [editandoId, setEditandoId] = useState(null);
     const [editForm, setEditForm] = useState({ nombre: '', precio: '', descripcion: '' });
+    const [preguntas, setPreguntas] = useState([]);
 
     const esDueno = standActivo && standActivo.propietarioId === usuario?.id;
 
     useEffect(() => {
         if (!standActivo) return;
         axiosClient.get(`/productos/stand/${standActivo.id}`).then((res) => setProductos(res.data));
+    }, [standActivo]);
+
+    useEffect(() => {
+        if (!standActivo) return;
+        axiosClient.get(`/preguntas/stand/${standActivo.id}`).then((res) => setPreguntas(res.data));
     }, [standActivo]);
 
     useEffect(() => {
@@ -103,6 +109,18 @@ function AdminStand() {
             setPreguntaForm({ texto: '', opciones: [{ texto: '', esCorrecta: true }, { texto: '', esCorrecta: false }] });
         } catch (err) {
             mostrar(err.response?.data?.mensaje || 'Error al agregar pregunta', 'error');
+        }
+        const { data } = await axiosClient.get(`/preguntas/stand/${standActivo.id}`);
+        setPreguntas(data);
+    };
+
+    const eliminarPregunta = async (id) => {
+        try {
+            await axiosClient.delete(`/preguntas/${id}`);
+            mostrar('Pregunta eliminada');
+            setPreguntas((prev) => prev.filter((p) => p.id !== id));
+        } catch (err) {
+            mostrar(err.response?.data?.mensaje || 'Error al eliminar', 'error');
         }
     };
 
@@ -242,6 +260,19 @@ function AdminStand() {
                             ))}
                             <BotonSenal type="submit">Agregar pregunta</BotonSenal>
                         </form>
+                    </div>
+
+                    <div className="bg-superficie/50 rounded-2xl p-5">
+                        <h4 className="font-display font-medium mb-3">Preguntas cargadas</h4>
+                        {preguntas.length === 0 && <p className="text-sm text-tinta/60">Todavía no hay preguntas.</p>}
+                        <ul className="flex flex-col gap-2">
+                            {preguntas.map((p) => (
+                                <li key={p.id} className="flex items-center justify-between font-mono text-sm bg-fondo rounded-lg px-3 py-2">
+                                    {p.texto}
+                                    <button onClick={() => eliminarPregunta(p.id)} className="text-xs text-tinta/40 hover:text-red-600 shrink-0 ml-3">Eliminar</button>
+                                </li>
+                            ))}
+                        </ul>
                     </div>
 
                     {/* Sección visible únicamente para el dueño del stand */}
