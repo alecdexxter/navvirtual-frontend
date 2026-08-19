@@ -5,7 +5,7 @@ import { useCarrito } from '../context/CarritoContext';
 import { useAuth } from '../context/AuthContext';
 import axiosClient from '../api/axiosClient';
 
-initMercadoPago('TU_PUBLIC_KEY_DE_PRUEBA');
+initMercadoPago('APP_USR-e6a3b3c4-4114-40ae-bc46-f60406588189');
 
 function Checkout() {
     const { items, total, vaciar } = useCarrito();

@@ -5,6 +5,7 @@ import BotonSenal from './ui/BotonSenal';
 import SubirImagen from './ui/SubirImagen';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
+import SubirVideo from './ui/SubirVideo';
 
 function AdminStand() {
     const [stands, setStands] = useState([]);
@@ -178,6 +179,21 @@ function AdminStand() {
                             valorActual={standActivo.imagenPortadaUrl}
                             etiqueta="Portada"
                             onSubido={actualizarPortada}
+                        />
+                    </div>
+                    <div className="bg-superficie/50 rounded-2xl p-5">
+                        <h4 className="font-display font-medium mb-3">Video del stand</h4>
+                        <SubirVideo
+                            valorActual={standActivo.videoUrl}
+                            etiqueta="Video de presentación"
+                            onSubido={async (url) => {
+                                await axiosClient.put(`/stands/${standActivo.id}`, {
+                                    nombre: standActivo.nombre, descripcion: standActivo.descripcion,
+                                    imagenPortadaUrl: standActivo.imagenPortadaUrl, videoUrl: url, eventoId: standActivo.eventoId,
+                                });
+                                mostrar('Video actualizado');
+                                await refrescar();
+                            }}
                         />
                     </div>
 

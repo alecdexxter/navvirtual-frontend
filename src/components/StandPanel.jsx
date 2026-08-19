@@ -62,16 +62,15 @@ function StandPanel({ standId, onCerrar }) {
                             {voto && <p className="font-mono text-xs text-tinta/50 mt-2">{voto.totalVotos} votos totales</p>}
                         </div>
 
-                        <Link
-                            to={`/tienda/stand/${standId}`}
-                            className="font-display font-semibold text-lg mt-8 mb-3 flex items-center gap-2 text-senal hover:text-senal-hover w-fit"
-                        >
-                            Lo que ofrece este stand ◣
-                        </Link>
+                        <div className="flex items-center justify-between mt-8 mb-3">
+                            <h3 className="font-display font-semibold text-lg">Lo que ofrece este stand</h3>
+                            <Link to={`/tienda/stand/${standId}`} className="text-xs text-senal hover:text-senal-hover font-mono">Ver todo ◣</Link>
+                        </div>
+
                         {productos.length === 0 && <p className="text-sm text-tinta/60">Este stand todavía no cargó productos.</p>}
 
                         <div className="flex flex-col divide-y divide-superficie">
-                            {productos.map((p) => (
+                            {productos.slice(0, 3).map((p) => (
                                 <div key={p.id} className="flex gap-3 py-3">
                                     {p.imagenUrl && (
                                         <img src={p.imagenUrl} alt={p.nombre} className="w-14 h-14 rounded-lg object-cover shrink-0" />

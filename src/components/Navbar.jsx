@@ -25,6 +25,15 @@ function Navbar() {
             navigate('/eventos');
         }
     };
+    const irATienda = async () => {
+        setAbierto(false);
+        try {
+            const { data } = await axiosClient.get('/eventos/publicos/vigentes');
+            navigate(data.length > 0 ? `/tienda/${data[0].id}` : '/eventos');
+        } catch {
+            navigate('/eventos');
+        }
+    };
 
     return (
         <>
@@ -72,6 +81,8 @@ function Navbar() {
                     <MenuItem label="Recorrido" onClick={irAlRecorrido} />
                     <MenuItem label="Entradas" onClick={() => cerrarYNavegar('/entradas')} />
                     <MenuItem label="Tienda" onClick={() => cerrarYNavegar('/carrito')} />
+                    <MenuItem label="Eventos" onClick={() => cerrarYNavegar('/eventos')} />
+
                     {usuario ? (
                         <>
                             <MenuItem label="Mi cuenta" onClick={() => cerrarYNavegar('/admin')} />
