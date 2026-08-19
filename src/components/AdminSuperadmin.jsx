@@ -6,6 +6,7 @@ import SubirImagen from './ui/SubirImagen';
 import { useToast } from '../context/ToastContext';
 
 function AdminSuperadmin() {
+    const [configSitio, setConfigSitio] = useState({ imagenesPortada: [] });
     const [eventoForm, setEventoForm] = useState({ nombre: '', descripcion: '', fechaInicio: '', fechaFin: '' });
     const [eventoEditandoId, setEventoEditandoId] = useState(null);
     const [rolForm, setRolForm] = useState({ usuarioId: '', nombreRol: 'ROLE_DUENIO_STAND' });
@@ -15,8 +16,35 @@ function AdminSuperadmin() {
     const [hotspotEventoId, setHotspotEventoId] = useState('');
     const [panoramasDelEvento, setPanoramasDelEvento] = useState([]);
     const [standsDelEvento, setStandsDelEvento] = useState([]);
+    const [entradas, setEntradas] = useState([]);
+    const [entradaEditandoId, setEntradaEditandoId] = useState(null);
 
     const { mostrar } = useToast();
+
+    useEffect(() => {
+        axiosClient.get('/configuracion').then((res) => setConfigSitio(res.data));
+        axiosClient.get('/productos/categoria/ENTRADA').then((res) => setEntradas(res.data));
+    }, []);
+
+    const agregarImagenPortada = async (url) => {
+        try {
+            const { data } = await axiosClient.post('/configuracion/imagenes', { url });
+            setConfigSitio(data);
+            mostrar('Imagen agregada al carrusel');
+        } catch (err) {
+            mostrar(err.response?.data?.mensaje || 'Error al agregar imagen', 'error');
+        }
+    };
+
+    const quitarImagenPortada = async (url) => {
+        try {
+            const { data } = await axiosClient.delete('/configuracion/imagenes', { params: { url } });
+            setConfigSitio(data);
+            mostrar('Imagen quitada');
+        } catch (err) {
+            mostrar(err.response?.data?.mensaje || 'Error al quitar imagen', 'error');
+        }
+    };
 
     useEffect(() => {
         if (!hotspotEventoId) {
@@ -130,8 +158,36 @@ function AdminSuperadmin() {
             });
             mostrar('Entrada creada');
             setEntradaForm({ nombre: '', precio: '', descripcion: '', eventoId: '' });
+            const { data } = await axiosClient.get('/productos/categoria/ENTRADA');
+            setEntradas(data);
         } catch (err) {
             mostrar(err.response?.data?.mensaje || 'Error al crear entrada', 'error');
+        }
+    };
+
+    const eliminarEntrada = async (id) => {
+        try {
+            await axiosClient.delete(`/productos/${id}`);
+            mostrar('Entrada eliminada');
+            setEntradas((prev) => prev.filter((e) => e.id !== id));
+        } catch (err) {
+            mostrar(err.response?.data?.mensaje || 'Error al eliminar', 'error');
+        }
+    };
+
+    const guardarEdicionEntrada = async (id) => {
+        try {
+            await axiosClient.put(`/productos/${id}`, {
+                nombre: entradaForm.nombre, precio: Number(entradaForm.precio),
+                descripcion: entradaForm.descripcion, categoria: 'ENTRADA',
+            });
+            mostrar('Entrada actualizada');
+            setEntradaEditandoId(null);
+            setEntradaForm({ nombre: '', precio: '', descripcion: '', eventoId: '' });
+            const { data } = await axiosClient.get('/productos/categoria/ENTRADA');
+            setEntradas(data);
+        } catch (err) {
+            mostrar(err.response?.data?.mensaje || 'Error al actualizar', 'error');
         }
     };
 
@@ -185,18 +241,21 @@ function AdminSuperadmin() {
             <h2 className="font-display font-semibold text-xl mt-1 mb-4">Gestión general</h2>
 
             <div className="bg-superficie/50 rounded-2xl p-5 mt-4">
-                <h3 className="font-display font-medium mb-3">Foto de portada del sitio</h3>
-                <SubirImagen
-                    etiqueta="Portada de inicio"
-                    onSubido={async (url) => {
-                        try {
-                            await axiosClient.put('/configuracion', { imagenPortadaUrl: url });
-                            mostrar('Portada del sitio actualizada');
-                        } catch (err) {
-                            mostrar(err.response?.data?.mensaje || 'Error al actualizar portada', 'error');
-                        }
-                    }}
-                />
+                <h3 className="font-display font-medium mb-3">Carrusel de portada del sitio</h3>
+                <div className="grid grid-cols-3 gap-2 mb-3">
+                    {configSitio.imagenesPortada.map((url) => (
+                        <div key={url} className="relative">
+                            <img src={url} alt="" className="w-full aspect-video object-cover rounded-lg" />
+                            <button
+                                onClick={() => quitarImagenPortada(url)}
+                                className="absolute top-1 right-1 bg-tinta/80 text-fondo text-xs w-6 h-6 rounded-full"
+                            >
+                                ✕
+                            </button>
+                        </div>
+                    ))}
+                </div>
+                <SubirImagen etiqueta="Agregar imagen al carrusel" onSubido={agregarImagenPortada} />
             </div>
 
             <div className="bg-superficie/50 rounded-2xl p-5 mb-4">
@@ -410,7 +469,41 @@ function AdminSuperadmin() {
                 </form>
             </div>
 
-            <div className="bg-superficie/50 rounded-2xl p-5">
+            <div className="bg-superficie/50 rounded-2xl p-5 mt-4">
+                <h3 className="font-display font-medium mb-3">Entradas cargadas</h3>
+                {entradas.length === 0 && <p className="text-sm text-tinta/60">Todavía no hay entradas.</p>}
+                <ul className="flex flex-col gap-2">
+                    {entradas.map((e) => (
+                        <li key={e.id} className="font-mono text-sm bg-fondo rounded-lg px-3 py-2">
+                            {entradaEditandoId === e.id ? (
+                                <div className="flex flex-col gap-2">
+                                    <Campo value={entradaForm.nombre} onChange={(ev) => setEntradaForm({ ...entradaForm, nombre: ev.target.value })} />
+                                    <Campo type="number" value={entradaForm.precio} onChange={(ev) => setEntradaForm({ ...entradaForm, precio: ev.target.value })} />
+                                    <div className="flex gap-2">
+                                        <BotonSenal type="button" onClick={() => guardarEdicionEntrada(e.id)}>Guardar</BotonSenal>
+                                        <button onClick={() => setEntradaEditandoId(null)} className="text-xs text-tinta/50">Cancelar</button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="flex items-center justify-between">
+                                    {e.nombre} — ${e.precio}
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => { setEntradaEditandoId(e.id); setEntradaForm({ nombre: e.nombre, precio: e.precio, descripcion: e.descripcion, eventoId: e.eventoId }); }}
+                                            className="text-xs text-senal"
+                                        >
+                                            Editar
+                                        </button>
+                                        <button onClick={() => eliminarEntrada(e.id)} className="text-xs text-tinta/40 hover:text-red-600">Eliminar</button>
+                                    </div>
+                                </div>
+                            )}
+                        </li>
+                    ))}
+                </ul>
+            </div>
+
+            <div className="bg-superficie/50 rounded-2xl p-5 mt-4">
                 <h3 className="font-display font-medium mb-3">Asignar rol a usuario</h3>
                 <form onSubmit={asignarRol} className="flex flex-col gap-3">
                     <Campo placeholder="ID de usuario" type="number" value={rolForm.usuarioId}
