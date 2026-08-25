@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthContext';
 function AdminBuffet() {
     const [buffets, setBuffets] = useState([]);
     const [buffetActivo, setBuffetActivo] = useState(null);
+    const [comunicados, setComunicados] = useState([]);
     const [productoForm, setProductoForm] = useState({ nombre: '', precio: '', descripcion: '', imagenUrl: '' });
     const [emailEmpleado, setEmailEmpleado] = useState('');
     const { mostrar } = useToast();
@@ -18,6 +19,11 @@ function AdminBuffet() {
     const [editForm, setEditForm] = useState({ nombre: '', precio: '', descripcion: '' });
 
     const esDueno = buffetActivo && buffetActivo.propietarioId === usuario?.id;
+
+    useEffect(() => {
+        if (!buffetActivo) return;
+        axiosClient.get(`/comunicados/evento/${buffetActivo.eventoId}`).then((res) => setComunicados(res.data));
+    }, [buffetActivo]);
 
     useEffect(() => {
         if (!buffetActivo) return;
@@ -123,6 +129,20 @@ function AdminBuffet() {
             {buffetActivo && (
                 <div className="flex flex-col gap-4">
                     <h3 className="font-display font-medium">Gestionando: Buffet #{buffetActivo.id}</h3>
+
+                    {comunicados.length > 0 && (
+                        <div className="bg-ambar/20 rounded-2xl p-5">
+                            <h4 className="font-display font-medium mb-3">📢 Comunicados del organizador</h4>
+                            <div className="flex flex-col gap-2">
+                                {comunicados.map((c) => (
+                                    <div key={c.id} className="bg-fondo rounded-lg px-3 py-2">
+                                        <p className="text-sm">{c.mensaje}</p>
+                                        <p className="font-mono text-xs text-tinta/50 mt-1">{c.gerenteNombre} · {new Date(c.fecha).toLocaleString()}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     <div className="bg-superficie/50 rounded-2xl p-5">
                         <h4 className="font-display font-medium mb-3">Agregar producto de confitería</h4>

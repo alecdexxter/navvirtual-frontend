@@ -4,6 +4,7 @@ import Campo from './ui/Campo';
 import BotonSenal from './ui/BotonSenal';
 import SubirImagen from './ui/SubirImagen';
 import { useToast } from '../context/ToastContext';
+import { Link } from 'react-router-dom';
 
 function AdminSuperadmin() {
     const [configSitio, setConfigSitio] = useState({ imagenesPortada: [] });
@@ -19,12 +20,23 @@ function AdminSuperadmin() {
     const [entradas, setEntradas] = useState([]);
     const [entradaEditandoId, setEntradaEditandoId] = useState(null);
 
+    // Estados para Conferencias y Comunicados
+    const [conferenciaForm, setConferenciaForm] = useState({ titulo: '', descripcion: '', tipo: 'CHARLA', horario: '', eventoId: '' });
+    const [comunicadoForm, setComunicadoForm] = useState({ mensaje: '', eventoId: '' });
+    const [conferencias, setConferencias] = useState([]);
+    const [conferenciaEventoId, setConferenciaEventoId] = useState('');
+
     const { mostrar } = useToast();
 
     useEffect(() => {
         axiosClient.get('/configuracion').then((res) => setConfigSitio(res.data));
         axiosClient.get('/productos/categoria/ENTRADA').then((res) => setEntradas(res.data));
     }, []);
+
+    useEffect(() => {
+        if (!conferenciaEventoId) { setConferencias([]); return; }
+        axiosClient.get(`/conferencias/evento/${conferenciaEventoId}`).then((res) => setConferencias(res.data));
+    }, [conferenciaEventoId]);
 
     const agregarImagenPortada = async (url) => {
         try {
@@ -235,10 +247,50 @@ function AdminSuperadmin() {
         }
     };
 
+    const crearConferencia = async (e) => {
+        e.preventDefault();
+        try {
+            await axiosClient.post('/conferencias', {
+                ...conferenciaForm, eventoId: Number(conferenciaForm.eventoId),
+            });
+            mostrar('Conferencia creada');
+            setConferenciaEventoId(conferenciaForm.eventoId);
+            setConferenciaForm({ titulo: '', descripcion: '', tipo: 'CHARLA', horario: '', eventoId: conferenciaForm.eventoId });
+        } catch (err) {
+            mostrar(err.response?.data?.mensaje || 'Error al crear conferencia', 'error');
+        }
+    };
+
+    const eliminarConferencia = async (id) => {
+        try {
+            await axiosClient.delete(`/conferencias/${id}`);
+            mostrar('Conferencia eliminada');
+            setConferencias((prev) => prev.filter((c) => c.id !== id));
+        } catch (err) {
+            mostrar(err.response?.data?.mensaje || 'Error al eliminar', 'error');
+        }
+    };
+
+    const enviarComunicado = async (e) => {
+        e.preventDefault();
+        try {
+            await axiosClient.post('/comunicados', {
+                mensaje: comunicadoForm.mensaje, eventoId: Number(comunicadoForm.eventoId),
+            });
+            mostrar('Comunicado enviado');
+            setComunicadoForm({ mensaje: '', eventoId: comunicadoForm.eventoId });
+        } catch (err) {
+            mostrar(err.response?.data?.mensaje || 'Error al enviar comunicado', 'error');
+        }
+    };
+
     return (
         <section>
             <span className="font-mono text-xs text-senal tracking-widest uppercase">◣ Superadmin</span>
             <h2 className="font-display font-semibold text-xl mt-1 mb-4">Gestión general</h2>
+            <Link to="/admin/editor-hotspots" className="inline-block mb-6 text-senal hover:text-senal-hover font-display font-medium">
+                🎯 Abrir editor visual de hotspots ◣
+            </Link>
 
             <div className="bg-superficie/50 rounded-2xl p-5 mt-4">
                 <h3 className="font-display font-medium mb-3">Carrusel de portada del sitio</h3>
@@ -501,6 +553,63 @@ function AdminSuperadmin() {
                         </li>
                     ))}
                 </ul>
+            </div>
+
+            <div className="bg-superficie/50 rounded-2xl p-5 mt-4">
+                <h3 className="font-display font-medium mb-3">Crear conferencia / actividad de escenario</h3>
+                <form onSubmit={crearConferencia} className="flex flex-col gap-3">
+                    <select value={conferenciaForm.eventoId}
+                            onChange={(e) => { setConferenciaForm({ ...conferenciaForm, eventoId: e.target.value }); setConferenciaEventoId(e.target.value); }}
+                            required className="bg-superficie rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-senal">
+                        <option value="">Elegí un evento</option>
+                        {eventos.map((ev) => <option key={ev.id} value={ev.id}>{ev.nombre} (#{ev.id})</option>)}
+                    </select>
+                    <Campo placeholder="Título" value={conferenciaForm.titulo}
+                           onChange={(e) => setConferenciaForm({ ...conferenciaForm, titulo: e.target.value })} required />
+                    <Campo placeholder="Descripción" value={conferenciaForm.descripcion}
+                           onChange={(e) => setConferenciaForm({ ...conferenciaForm, descripcion: e.target.value })} />
+                    <select value={conferenciaForm.tipo} onChange={(e) => setConferenciaForm({ ...conferenciaForm, tipo: e.target.value })}
+                            className="bg-superficie rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-senal">
+                        <option value="CHARLA">Charla</option>
+                        <option value="MUESTRA_ARTISTICA">Muestra artística</option>
+                        <option value="MUESTRA_PRODUCTO">Muestra de producto</option>
+                        <option value="OTRO">Otro</option>
+                    </select>
+                    <Campo type="datetime-local" value={conferenciaForm.horario}
+                           onChange={(e) => setConferenciaForm({ ...conferenciaForm, horario: e.target.value })} required />
+                    <BotonSenal type="submit">Crear</BotonSenal>
+                </form>
+
+                {conferencias.length > 0 && (
+                    <ul className="flex flex-col gap-2 mt-4">
+                        {conferencias.map((c) => (
+                            <li key={c.id} className="flex items-center justify-between font-mono text-sm bg-fondo rounded-lg px-3 py-2">
+                                {c.titulo} — {new Date(c.horario).toLocaleString()}
+                                <button onClick={() => eliminarConferencia(c.id)} className="text-xs text-tinta/40 hover:text-red-600">Eliminar</button>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </div>
+
+            <div className="bg-superficie/50 rounded-2xl p-5 mt-4">
+                <h3 className="font-display font-medium mb-3">Enviar comunicado a stands/buffet</h3>
+                <form onSubmit={enviarComunicado} className="flex flex-col gap-3">
+                    <select value={comunicadoForm.eventoId} onChange={(e) => setComunicadoForm({ ...comunicadoForm, eventoId: e.target.value })}
+                            required className="bg-superficie rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-senal">
+                        <option value="">Elegí un evento</option>
+                        {eventos.map((ev) => <option key={ev.id} value={ev.id}>{ev.nombre} (#{ev.id})</option>)}
+                    </select>
+                    <textarea
+                        placeholder="Mensaje"
+                        value={comunicadoForm.mensaje}
+                        onChange={(e) => setComunicadoForm({ ...comunicadoForm, mensaje: e.target.value })}
+                        required
+                        rows={3}
+                        className="bg-superficie rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-senal resize-none"
+                    />
+                    <BotonSenal type="submit">Enviar</BotonSenal>
+                </form>
             </div>
 
             <div className="bg-superficie/50 rounded-2xl p-5 mt-4">

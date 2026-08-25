@@ -10,6 +10,7 @@ import SubirVideo from './ui/SubirVideo';
 function AdminStand() {
     const [stands, setStands] = useState([]);
     const [standActivo, setStandActivo] = useState(null);
+    const [comunicados, setComunicados] = useState([]);
     const [productoForm, setProductoForm] = useState({ nombre: '', precio: '', descripcion: '', imagenUrl: '' });
     const [preguntaForm, setPreguntaForm] = useState({ texto: '', opciones: [{ texto: '', esCorrecta: true }, { texto: '', esCorrecta: false }] });
     const [emailEmpleado, setEmailEmpleado] = useState('');
@@ -21,6 +22,11 @@ function AdminStand() {
     const [preguntas, setPreguntas] = useState([]);
 
     const esDueno = standActivo && standActivo.propietarioId === usuario?.id;
+
+    useEffect(() => {
+        if (!standActivo) return;
+        axiosClient.get(`/comunicados/evento/${standActivo.eventoId}`).then((res) => setComunicados(res.data));
+    }, [standActivo]);
 
     useEffect(() => {
         if (!standActivo) return;
@@ -172,6 +178,20 @@ function AdminStand() {
             {standActivo && (
                 <div className="flex flex-col gap-4">
                     <h3 className="font-display font-medium">Gestionando: {standActivo.nombre}</h3>
+
+                    {comunicados.length > 0 && (
+                        <div className="bg-ambar/20 rounded-2xl p-5">
+                            <h4 className="font-display font-medium mb-3">📢 Comunicados del organizador</h4>
+                            <div className="flex flex-col gap-2">
+                                {comunicados.map((c) => (
+                                    <div key={c.id} className="bg-fondo rounded-lg px-3 py-2">
+                                        <p className="text-sm">{c.mensaje}</p>
+                                        <p className="font-mono text-xs text-tinta/50 mt-1">{c.gerenteNombre} · {new Date(c.fecha).toLocaleString()}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     <div className="bg-superficie/50 rounded-2xl p-5">
                         <h4 className="font-display font-medium mb-3">Foto de portada del stand</h4>

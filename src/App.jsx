@@ -16,6 +16,8 @@ import TiendaStand from './pages/TiendaStand';
 import { ToastProvider } from './context/ToastContext';
 import Entradas from './pages/Entradas';
 import EntradasEvento from './pages/EntradasEvento';
+import EditorHotspots from './pages/EditorHotspots';
+
 
 function RutaProtegida({ children }) {
     const { usuario } = useAuth();
@@ -67,6 +69,7 @@ function App() {
                                 </RutaProtegida>
                             }
                         />
+
                         <Route
                             path="/carrito"
                             element={
@@ -92,6 +95,7 @@ function App() {
                             }
                         />
                         <Route path="/tienda/stand/:standId" element={<RutaProtegida><TiendaStand /></RutaProtegida>} />
+                        <Route path="/admin/editor-hotspots" element={<RutaProtegida><EditorHotspots /></RutaProtegida>} />
                     </Routes>
                     </ToastProvider>
                 </CarritoProvider>
