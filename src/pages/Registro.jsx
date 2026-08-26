@@ -38,7 +38,7 @@ function Registro() {
                            className="bg-superficie rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-senal" />
                     <button
                         type="submit"
-                        className="bg-senal hover:bg-senal-hover text-fondo font-display font-semibold py-3 rounded-full transition-colors mt-2"
+                        className="bg-senal hover:bg-senal-hover text-tinta font-display font-semibold py-3 rounded-full transition-colors mt-2"
                     >
                         Registrarme
                     </button>

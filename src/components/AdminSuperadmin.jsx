@@ -300,7 +300,7 @@ function AdminSuperadmin() {
                             <img src={url} alt="" className="w-full aspect-video object-cover rounded-lg" />
                             <button
                                 onClick={() => quitarImagenPortada(url)}
-                                className="absolute top-1 right-1 bg-tinta/80 text-fondo text-xs w-6 h-6 rounded-full"
+                                className="absolute top-1 right-1 bg-tinta/80 text-tinta text-xs w-6 h-6 rounded-full"
                             >
                                 ✕
                             </button>

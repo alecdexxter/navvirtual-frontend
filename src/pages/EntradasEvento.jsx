@@ -23,7 +23,7 @@ function EntradasEvento() {
                     <span className="font-mono text-xs text-senal tracking-widest uppercase">◣ Entradas</span>
                     <h1 className="font-display font-bold text-3xl mt-2">{evento?.nombre}</h1>
                 </div>
-                <Link to="/carrito" className="bg-tinta text-fondo font-display font-semibold px-5 py-2.5 rounded-full hover:bg-senal transition-colors">
+                <Link to="/carrito" className="bg-tinta text-tinta font-display font-semibold px-5 py-2.5 rounded-full hover:bg-senal transition-colors">
                     Carrito ({cantidadTotal})
                 </Link>
             </div>
@@ -40,7 +40,7 @@ function EntradasEvento() {
                         </div>
                         <button
                             onClick={() => agregar(e)}
-                            className="bg-senal hover:bg-senal-hover text-fondo font-display font-medium px-4 py-2 rounded-full transition-colors"
+                            className="bg-senal hover:bg-senal-hover text-tinta font-display font-medium px-4 py-2 rounded-full transition-colors"
                         >
                             Agregar
                         </button>

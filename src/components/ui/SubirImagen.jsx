@@ -31,9 +31,13 @@ function SubirImagen({ valorActual, onSubido, etiqueta = 'Imagen' }) {
         <div>
             <label className="block text-xs font-mono text-tinta/60 mb-2">{etiqueta}</label>
             {preview && (
-                <img src={preview} alt="preview" className="w-full aspect-video object-cover rounded-xl mb-2 bg-superficie" />
+                /\.(mp4|webm|mov)$/i.test(preview) || preview.startsWith('blob:') === false && /\.(mp4|webm|mov)$/i.test(valorActual || '') ? (
+                    <video src={preview} controls className="w-full aspect-video rounded-xl mb-2 bg-superficie" />
+                ) : (
+                    <img src={preview} alt="preview" className="w-full aspect-video object-cover rounded-xl mb-2 bg-superficie" />
+                )
             )}
-            <input type="file" accept="image/*" onChange={handleFile} disabled={subiendo} className="text-sm" />
+            <input type="file" accept="image/*,video/*" onChange={handleFile} disabled={subiendo} className="text-sm" />
             {subiendo && <p className="text-xs text-senal mt-1">Subiendo...</p>}
         </div>
     );

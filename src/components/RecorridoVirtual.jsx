@@ -74,25 +74,25 @@ function RecorridoVirtual({ eventoId, onAbrirStand }) {
 
     if (!panoramaActual) {
         return (
-            <div className="min-h-[calc(100vh-73px)] bg-black flex items-center justify-center">
-                <p className="font-mono text-fondo/50 text-sm">Cargando recorrido...</p>
+            <div className="h-[calc(100dvh-73px)] bg-fondo flex items-center justify-center">
+                <p className="font-mono text-tinta/50 text-sm">Cargando recorrido...</p>
             </div>
         );
     }
 
     return (
-        <div className="relative bg-black">
-            <div className="absolute top-0 inset-x-0 z-20 flex items-center justify-between px-6 py-4 bg-gradient-to-b from-black/80 to-transparent pointer-events-none">
+        <div className="relative bg-fondo h-[calc(100dvh-73px)] overflow-hidden">
+            <div className="absolute top-0 inset-x-0 z-20 flex items-center justify-between px-6 py-4 bg-gradient-to-b from-fondo/90 to-transparent pointer-events-none">
                 <Link
                     to={`/tienda/${eventoId}`}
-                    className="pointer-events-auto bg-senal hover:bg-senal-hover text-fondo font-display font-medium text-sm px-5 py-2.5 rounded-full transition-colors flex items-center gap-1.5"
+                    className="pointer-events-auto bg-senal hover:bg-senal-hover text-tinta font-display font-medium text-sm px-5 py-2.5 rounded-full transition-colors flex items-center gap-1.5"
                 >
                     🛍️ Ir a la tienda
                 </Link>
 
-                <span className="pointer-events-auto font-mono text-xs text-fondo bg-black/50 backdrop-blur px-5 py-2.5 rounded-full tracking-widest uppercase">
-          {panoramaActual.nombre}
-        </span>
+                <span className="pointer-events-auto font-mono text-xs text-tinta bg-tinta/60 backdrop-blur px-5 py-2.5 rounded-full tracking-widest uppercase">
+                    {panoramaActual.nombre}
+                </span>
 
                 <span className="w-[140px]" />
             </div>
@@ -100,7 +100,7 @@ function RecorridoVirtual({ eventoId, onAbrirStand }) {
             <ReactPhotoSphereViewer
                 key={panoramaActual.id}
                 src={panoramaActual.imagenUrl}
-                height="calc(100vh - 73px)"
+                height="100%"
                 width="100%"
                 plugins={[[MarkersPlugin, { markers: [] }]]}
                 onReady={handleReady}

@@ -25,18 +25,18 @@ function Tienda() {
                     <span className="font-mono text-xs text-senal tracking-widest uppercase">◣ Tienda</span>
                     <h1 className="font-display font-bold text-3xl mt-2">Tienda</h1>
                 </div>
-                <Link to="/carrito" className="bg-tinta text-fondo font-display font-semibold px-5 py-2.5 rounded-full hover:bg-senal transition-colors">
+                <Link to="/carrito" className="bg-tinta text-tinta font-display font-semibold px-5 py-2.5 rounded-full hover:bg-senal transition-colors">
                     Carrito ({cantidadTotal})
                 </Link>
             </div>
 
             <div className="flex gap-2 mb-8">
                 <button onClick={() => setCategoria('STAND')}
-                        className={`font-display font-medium px-5 py-2 rounded-full transition-colors ${categoria === 'STAND' ? 'bg-senal text-fondo' : 'bg-superficie hover:bg-tinta/10'}`}>
+                        className={`font-display font-medium px-5 py-2 rounded-full transition-colors ${categoria === 'STAND' ? 'bg-senal text-tinta' : 'bg-superficie hover:bg-tinta/10'}`}>
                     Stands
                 </button>
                 <button onClick={() => setCategoria('CONFITERIA')}
-                        className={`font-display font-medium px-5 py-2 rounded-full transition-colors ${categoria === 'CONFITERIA' ? 'bg-senal text-fondo' : 'bg-superficie hover:bg-tinta/10'}`}>
+                        className={`font-display font-medium px-5 py-2 rounded-full transition-colors ${categoria === 'CONFITERIA' ? 'bg-senal text-tinta' : 'bg-superficie hover:bg-tinta/10'}`}>
                     Confitería
                 </button>
             </div>
@@ -76,7 +76,7 @@ function Tienda() {
                                     <p className="font-mono text-sm mt-1">${p.precio}</p>
                                 </div>
                             </div>
-                            <button onClick={() => agregar(p)} className="bg-senal hover:bg-senal-hover text-fondo font-display font-medium px-4 py-2 rounded-full transition-colors shrink-0">
+                            <button onClick={() => agregar(p)} className="bg-senal hover:bg-senal-hover text-tinta font-display font-medium px-4 py-2 rounded-full transition-colors shrink-0">
                                 Agregar
                             </button>
                         </div>

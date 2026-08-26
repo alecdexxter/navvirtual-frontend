@@ -168,7 +168,7 @@ function AdminStand() {
                     <button
                         key={s.id}
                         onClick={() => setStandActivo(s)}
-                        className={`font-display text-sm px-4 py-2 rounded-full transition-colors ${standActivo?.id === s.id ? 'bg-tinta text-fondo' : 'bg-superficie hover:bg-tinta/10'}`}
+                        className={`font-display text-sm px-4 py-2 rounded-full transition-colors ${standActivo?.id === s.id ? 'bg-tinta text-tinta' : 'bg-superficie hover:bg-tinta/10'}`}
                     >
                         {s.nombre}
                     </button>

@@ -61,7 +61,7 @@ function Checkout() {
                 )}
                 <button
                     onClick={() => navigate('/eventos')}
-                    className="block mx-auto bg-senal hover:bg-senal-hover text-fondo font-display font-semibold px-6 py-3 rounded-full transition-colors"
+                    className="block mx-auto bg-senal hover:bg-senal-hover text-tinta font-display font-semibold px-6 py-3 rounded-full transition-colors"
                 >
                     Volver a eventos
                 </button>

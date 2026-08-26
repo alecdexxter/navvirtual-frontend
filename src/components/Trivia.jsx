@@ -60,7 +60,7 @@ function Trivia({ standId }) {
                             key={op.id}
                             onClick={() => handleResponder(op.id)}
                             disabled={respondiendo}
-                            className="text-left bg-fondo hover:bg-tinta hover:text-fondo rounded-xl px-4 py-2.5 transition-colors disabled:opacity-50"
+                            className="text-left bg-fondo hover:bg-tinta hover:text-tinta rounded-xl px-4 py-2.5 transition-colors disabled:opacity-50"
                         >
                             {op.texto}
                         </button>
@@ -75,7 +75,7 @@ function Trivia({ standId }) {
                     </p>
                     <button
                         onClick={siguientePregunta}
-                        className="bg-senal hover:bg-senal-hover text-fondo font-display font-medium px-4 py-2 rounded-full transition-colors"
+                        className="bg-senal hover:bg-senal-hover text-tinta font-display font-medium px-4 py-2 rounded-full transition-colors"
                     >
                         {indice + 1 < preguntas.length ? 'Siguiente pregunta' : 'Terminar'}
                     </button>

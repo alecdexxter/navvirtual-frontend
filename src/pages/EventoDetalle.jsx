@@ -33,19 +33,19 @@ function EventoDetalle() {
             <div className="flex gap-3 mb-10 flex-wrap">
                 <Link
                     to={`/recorrido/${eventoId}`}
-                    className="bg-senal hover:bg-senal-hover text-fondo font-display font-semibold px-6 py-3 rounded-full transition-colors"
+                    className="bg-senal hover:bg-senal-hover text-tinta font-display font-semibold px-6 py-3 rounded-full transition-colors"
                 >
                     Entrar al recorrido 360 →
                 </Link>
                 <Link
                     to={`/tienda/${eventoId}`}
-                    className="bg-superficie hover:bg-tinta hover:text-fondo font-display font-semibold px-6 py-3 rounded-full transition-colors"
+                    className="bg-superficie hover:bg-tinta hover:text-tinta font-display font-semibold px-6 py-3 rounded-full transition-colors"
                 >
                     Ir a la tienda
                 </Link>
                 <button
                     onClick={() => setMostrarConferencias(true)}
-                    className="bg-superficie hover:bg-tinta hover:text-fondo font-display font-semibold px-6 py-3 rounded-full transition-colors"
+                    className="bg-superficie hover:bg-tinta hover:text-tinta font-display font-semibold px-6 py-3 rounded-full transition-colors"
                 >
                     📅 Cronograma
                 </button>

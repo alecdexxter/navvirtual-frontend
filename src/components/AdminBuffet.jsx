@@ -119,7 +119,7 @@ function AdminBuffet() {
                     <button
                         key={b.id}
                         onClick={() => setBuffetActivo(b)}
-                        className={`font-display text-sm px-4 py-2 rounded-full transition-colors ${buffetActivo?.id === b.id ? 'bg-tinta text-fondo' : 'bg-superficie hover:bg-tinta/10'}`}
+                        className={`font-display text-sm px-4 py-2 rounded-full transition-colors ${buffetActivo?.id === b.id ? 'bg-tinta text-tinta' : 'bg-superficie hover:bg-tinta/10'}`}
                     >
                         Buffet del evento #{b.eventoId}
                     </button>

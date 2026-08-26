@@ -46,7 +46,7 @@ function Carrito() {
 
             <button
                 onClick={() => navigate('/checkout')}
-                className="w-full bg-senal hover:bg-senal-hover text-fondo font-display font-semibold py-4 rounded-full transition-colors"
+                className="w-full bg-senal hover:bg-senal-hover text-tinta font-display font-semibold py-4 rounded-full transition-colors"
             >
                 Ir a pagar →
             </button>

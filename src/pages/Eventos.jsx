@@ -34,10 +34,10 @@ function Eventos() {
             <span className="font-mono text-xs text-senal group-hover:text-ambar transition-colors">
               EVENTO · {String(ev.id).padStart(2, '0')}
             </span>
-                        <h2 className="font-display font-semibold text-xl mt-2 mb-2 group-hover:text-fondo transition-colors">
+                        <h2 className="font-display font-semibold text-xl mt-2 mb-2 group-hover:text-tinta transition-colors">
                             {ev.nombre}
                         </h2>
-                        <p className="text-sm text-tinta/60 group-hover:text-fondo/70 transition-colors line-clamp-2">
+                        <p className="text-sm text-tinta/60 group-hover:text-tinta/70 transition-colors line-clamp-2">
                             {ev.descripcion}
                         </p>
                         <span className="inline-block mt-4 text-senal group-hover:text-ambar transition-colors font-display font-medium">

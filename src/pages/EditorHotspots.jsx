@@ -181,7 +181,7 @@ function EditorHotspots() {
                                 )}
 
                                 <button onClick={guardarHotspot} disabled={!destinoNuevo}
-                                        className="bg-senal hover:bg-senal-hover text-fondo font-display font-medium px-5 py-2 rounded-full transition-colors disabled:opacity-50">
+                                        className="bg-senal hover:bg-senal-hover text-tinta font-display font-medium px-5 py-2 rounded-full transition-colors disabled:opacity-50">
                                     Guardar hotspot
                                 </button>
                                 <button onClick={() => setPendiente(null)} className="text-sm text-tinta/50">Cancelar</button>

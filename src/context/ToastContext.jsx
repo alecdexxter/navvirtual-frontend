@@ -20,7 +20,7 @@ export function ToastProvider({ children }) {
                 {toasts.map((t) => (
                     <div
                         key={t.id}
-                        className={`font-display text-sm px-5 py-3 rounded-xl shadow-lg text-fondo ${t.tipo === 'error' ? 'bg-red-600' : 'bg-exito'}`}
+                        className={`font-display text-sm px-5 py-3 rounded-xl shadow-lg text-tinta ${t.tipo === 'error' ? 'bg-red-600' : 'bg-exito'}`}
                     >
                         {t.tipo === 'error' ? '✕ ' : '✓ '}{t.mensaje}
                     </div>

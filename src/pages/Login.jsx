@@ -45,7 +45,7 @@ function Login() {
                     />
                     <button
                         type="submit"
-                        className="bg-senal hover:bg-senal-hover text-fondo font-display font-semibold py-3 rounded-full transition-colors mt-2"
+                        className="bg-senal hover:bg-senal-hover text-tinta font-display font-semibold py-3 rounded-full transition-colors mt-2"
                     >
                         Ingresar
                     </button>
