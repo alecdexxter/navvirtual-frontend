@@ -28,10 +28,10 @@ function Carrito() {
                         </div>
                         <div className="flex items-center gap-3">
                             <button onClick={() => cambiarCantidad(item.productoId, item.cantidad - 1)}
-                                    className="w-7 h-7 rounded-full bg-superficie hover:bg-tinta/10 font-display">−</button>
+                                    className="w-7 h-7 rounded-full bg-fondo hover:bg-senal/20 font-display text-tinta">−</button>
                             <span className="font-mono w-4 text-center">{item.cantidad}</span>
                             <button onClick={() => cambiarCantidad(item.productoId, item.cantidad + 1)}
-                                    className="w-7 h-7 rounded-full bg-superficie hover:bg-tinta/10 font-display">+</button>
+                                    className="w-7 h-7 rounded-full bg-fondo hover:bg-senal/20 font-display text-tinta">+</button>
                             <button onClick={() => quitar(item.productoId)}
                                     className="text-xs text-tinta/40 hover:text-red-600 ml-2">Quitar</button>
                         </div>

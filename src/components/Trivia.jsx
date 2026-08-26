@@ -47,10 +47,10 @@ function Trivia({ standId }) {
     }
 
     return (
-        <div className="mt-6 bg-superficie/60 rounded-2xl p-5">
-      <span className="font-mono text-xs text-senal">
-        TRIVIA · {indice + 1}/{preguntas.length}
-      </span>
+        <div className="">
+            <span className="font-mono text-xs text-senal">
+                TRIVIA · {indice + 1}/{preguntas.length}
+            </span>
             <p className="font-display font-medium mt-1 mb-4">{preguntaActual.texto}</p>
 
             {!resultado && (
