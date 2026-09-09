@@ -10,7 +10,7 @@ function AdminSuperadmin() {
     const [configSitio, setConfigSitio] = useState({ imagenesPortada: [] });
     const [eventoForm, setEventoForm] = useState({ nombre: '', descripcion: '', fechaInicio: '', fechaFin: '' });
     const [eventoEditandoId, setEventoEditandoId] = useState(null);
-    const [rolForm, setRolForm] = useState({ usuarioId: '', nombreRol: 'ROLE_DUENIO_STAND' });
+    const [rolForm, setRolForm] = useState({ usuarioEmail: '', nombreRol: 'ROLE_DUENIO_STAND' });
     const [panoramaForm, setPanoramaForm] = useState({ nombre: '', eventoId: '', imagenUrl: '', esPuntoInicio: false });
     const [hotspotForm, setHotspotForm] = useState({ panoramaOrigenId: '', panoramaDestinoId: '', standId: '', tipo: 'NAVEGACION', yaw: 0, pitch: 0 });
     const [eventos, setEventos] = useState([]);
@@ -122,8 +122,8 @@ function AdminSuperadmin() {
         }
     };
 
-    const [standForm, setStandForm] = useState({ nombre: '', descripcion: '', eventoId: '', propietarioId: '' });
-    const [buffetForm, setBuffetForm] = useState({ eventoId: '', propietarioId: '' });
+    const [standForm, setStandForm] = useState({ nombre: '', descripcion: '', eventoId: '', propietarioEmail: '' });
+    const [buffetForm, setBuffetForm] = useState({ eventoId: '', propietarioEmail: '' });
     const [todosLosEventos, setTodosLosEventos] = useState([]);
     const [hotspotEventoIdBorrar, setHotspotEventoIdBorrar] = useState('');
     const [panoramaBorrarId, setPanoramaBorrarId] = useState('');
@@ -147,13 +147,21 @@ function AdminSuperadmin() {
     const crearStand = async (e) => {
         e.preventDefault();
         try {
+            let propietarioId = null;
+            if (standForm.propietarioEmail) {
+                const { data: usuarioEncontrado } = await axiosClient.get('/usuarios/buscar', {
+                    params: { email: standForm.propietarioEmail },
+                });
+                propietarioId = usuarioEncontrado.id;
+            }
             await axiosClient.post('/stands', {
-                ...standForm,
+                nombre: standForm.nombre,
+                descripcion: standForm.descripcion,
                 eventoId: Number(standForm.eventoId),
-                propietarioId: standForm.propietarioId ? Number(standForm.propietarioId) : null,
+                propietarioId,
             });
             mostrar('Stand creado');
-            setStandForm({ nombre: '', descripcion: '', eventoId: '', propietarioId: '' });
+            setStandForm({ nombre: '', descripcion: '', eventoId: '', propietarioEmail: '' });
         } catch (err) {
             mostrar(err.response?.data?.mensaje || 'Error al crear stand', 'error');
         }
@@ -206,12 +214,19 @@ function AdminSuperadmin() {
     const crearBuffet = async (e) => {
         e.preventDefault();
         try {
+            let propietarioId = null;
+            if (buffetForm.propietarioEmail) {
+                const { data: usuarioEncontrado } = await axiosClient.get('/usuarios/buscar', {
+                    params: { email: buffetForm.propietarioEmail },
+                });
+                propietarioId = usuarioEncontrado.id;
+            }
             await axiosClient.post('/buffets', {
                 eventoId: Number(buffetForm.eventoId),
-                propietarioId: buffetForm.propietarioId ? Number(buffetForm.propietarioId) : null,
+                propietarioId,
             });
             mostrar('Buffet creado');
-            setBuffetForm({ eventoId: '', propietarioId: '' });
+            setBuffetForm({ eventoId: '', propietarioEmail: '' });
         } catch (err) {
             mostrar(err.response?.data?.mensaje || 'Error al crear buffet', 'error');
         }
@@ -240,8 +255,12 @@ function AdminSuperadmin() {
     const asignarRol = async (e) => {
         e.preventDefault();
         try {
-            await axiosClient.post('/roles/asignar', { usuarioId: Number(rolForm.usuarioId), nombreRol: rolForm.nombreRol });
-            mostrar('Rol asignado');
+            const { data: usuarioEncontrado } = await axiosClient.get('/usuarios/buscar', {
+                params: { email: rolForm.usuarioEmail },
+            });
+            await axiosClient.post('/roles/asignar', { usuarioId: usuarioEncontrado.id, nombreRol: rolForm.nombreRol });
+            mostrar(`Rol asignado a ${usuarioEncontrado.nombre}`);
+            setRolForm({ usuarioEmail: '', nombreRol: rolForm.nombreRol });
         } catch (err) {
             mostrar(err.response?.data?.mensaje || 'Error al asignar rol', 'error');
         }
@@ -309,6 +328,27 @@ function AdminSuperadmin() {
                 </div>
                 <SubirImagen etiqueta="Agregar imagen al carrusel" onSubido={agregarImagenPortada} />
             </div>
+            <div className="bg-superficie/50 rounded-2xl p-5 mt-4">
+                <h3 className="font-display font-medium mb-3">Evento destacado en la portada</h3>
+                <select
+                    value={configSitio.eventoDestacadoId || ''}
+                    onChange={async (e) => {
+                        const eventoId = Number(e.target.value);
+                        try {
+                            const { data } = await axiosClient.put('/configuracion/evento-destacado', { eventoId });
+                            setConfigSitio(data);
+                            mostrar('Evento destacado actualizado');
+                        } catch (err) {
+                            mostrar('Error al actualizar', 'error');
+                        }
+                    }}
+                    className="bg-superficie rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-senal w-full"
+                >
+                    <option value="">Ninguno seleccionado</option>
+                    {eventos.map((ev) => <option key={ev.id} value={ev.id}>{ev.nombre}</option>)}
+                </select>
+            </div>
+
 
             <div className="bg-superficie/50 rounded-2xl p-5 mb-4">
                 <h3 className="font-display font-medium mb-3">
@@ -341,8 +381,8 @@ function AdminSuperadmin() {
                         <option value="">Elegí un evento</option>
                         {eventos.map((ev) => <option key={ev.id} value={ev.id}>{ev.nombre} (#{ev.id})</option>)}
                     </select>
-                    <Campo placeholder="ID del usuario dueño (opcional)" type="number" value={standForm.propietarioId}
-                           onChange={(e) => setStandForm({ ...standForm, propietarioId: e.target.value })} />
+                    <Campo placeholder="Email del dueño (opcional)" type="email" value={standForm.propietarioEmail}
+                           onChange={(e) => setStandForm({ ...standForm, propietarioEmail: e.target.value })} />
                     <BotonSenal type="submit">Crear stand</BotonSenal>
                 </form>
             </div>
@@ -355,8 +395,8 @@ function AdminSuperadmin() {
                         <option value="">Elegí un evento</option>
                         {eventos.map((ev) => <option key={ev.id} value={ev.id}>{ev.nombre} (#{ev.id})</option>)}
                     </select>
-                    <Campo placeholder="ID del usuario dueño (opcional)" type="number" value={buffetForm.propietarioId}
-                           onChange={(e) => setBuffetForm({ ...buffetForm, propietarioId: e.target.value })} />
+                    <Campo placeholder="Email del dueño (opcional)" type="email" value={buffetForm.propietarioEmail}
+                           onChange={(e) => setBuffetForm({ ...buffetForm, propietarioEmail: e.target.value })} />
                     <BotonSenal type="submit">Crear buffet</BotonSenal>
                 </form>
             </div>
@@ -615,8 +655,8 @@ function AdminSuperadmin() {
             <div className="bg-superficie/50 rounded-2xl p-5 mt-4">
                 <h3 className="font-display font-medium mb-3">Asignar rol a usuario</h3>
                 <form onSubmit={asignarRol} className="flex flex-col gap-3">
-                    <Campo placeholder="ID de usuario" type="number" value={rolForm.usuarioId}
-                           onChange={(e) => setRolForm({ ...rolForm, usuarioId: e.target.value })} required />
+                    <Campo placeholder="Email del usuario" type="email" value={rolForm.usuarioEmail}
+                           onChange={(e) => setRolForm({ ...rolForm, usuarioEmail: e.target.value })} required />
                     <select
                         value={rolForm.nombreRol}
                         onChange={(e) => setRolForm({ ...rolForm, nombreRol: e.target.value })}

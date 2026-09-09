@@ -27,7 +27,7 @@ function Admin() {
                 {(tieneRol('ROLE_DUENIO_BUFFET') || tieneRol('ROLE_EMPLEADO_BUFFET')) && <AdminBuffet />}
 
                 {!tieneAlgunPanel && (
-                    <p className="text-tinta/60">{!tieneAlgunPanel && <Perfil />}</p>
+                    <div className="text-tinta/60">{!tieneAlgunPanel && <Perfil />} </div>
                 )}
             </div>
         </div>

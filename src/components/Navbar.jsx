@@ -17,7 +17,7 @@ function Navbar() {
         setAbierto(false);
         try {
             const { data } = await axiosClient.get('/eventos/publicos/vigentes');
-            navigate(data.length > 0 ? `/recorrido/${data[0].id}` : '/eventos');
+            navigate(data.length > 0 ? `/recorrido/${data[4].id}` : '/eventos');
         } catch {
             navigate('/eventos');
         }
@@ -27,7 +27,7 @@ function Navbar() {
         setAbierto(false);
         try {
             const { data } = await axiosClient.get('/eventos/publicos/vigentes');
-            navigate(data.length > 0 ? `/tienda/${data[0].id}` : '/eventos');
+            navigate(data.length > 0 ? `/tienda/${data[4].id}` : '/eventos');
         } catch {
             navigate('/eventos');
         }

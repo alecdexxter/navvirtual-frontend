@@ -45,10 +45,19 @@ function Home() {
     }, []);
 
     useEffect(() => {
-        axiosClient.get('/eventos/publicos/vigentes').then((res) => {
-            if (res.data.length > 0) {
-                setEventoId(res.data[0].id);
-                axiosClient.get(`/stands/evento/${res.data[0].id}`).then((r) => setStands(r.data.slice(0, 3)));
+        axiosClient.get('/configuracion').then((res) => {
+            const eventoDestacadoId = res.data.eventoDestacadoId;
+            if (eventoDestacadoId) {
+                setEventoId(eventoDestacadoId);
+                axiosClient.get(`/stands/evento/${eventoDestacadoId}`).then((r) => setStands(r.data.slice(0, 3)));
+            } else {
+                // fallback: si no hay uno elegido, usa el primero vigente (comportamiento anterior)
+                axiosClient.get('/eventos/publicos/vigentes').then((res2) => {
+                    if (res2.data.length > 0) {
+                        setEventoId(res2.data[0].id);
+                        axiosClient.get(`/stands/evento/${res2.data[0].id}`).then((r) => setStands(r.data.slice(0, 3)));
+                    }
+                });
             }
         });
     }, []);
